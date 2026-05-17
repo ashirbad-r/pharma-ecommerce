@@ -1,0 +1,9 @@
+{
+  "appId": "com.pharmaapp.shop",
+  "appName": "PharmaShop",
+  "webDir": "dist",
+  "server": {
+    "url": "https://pharma-frontend-13bz.onrender.com",
+    "cleartext": false
+  }
+}
