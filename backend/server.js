@@ -28,7 +28,7 @@ app.use('/api/', limiter);
 // CORS CONFIGURATION
 // ====================================
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173', 'https://pharma-frontend-13bz.onrender.com', 'http://localhost:5173', 'http://172.20.10.2:5173'],
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173', 'https://pharma-frontend-13bz.onrender.com,https://pharma-admin-s43l.onrender.com', 'http://localhost:5173', 'http://172.20.10.2:5173'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
