@@ -134,3 +134,7 @@ process.on('SIGINT', () => {
 });
 
 module.exports = app;
+
+// Initialize database with seed data
+const initializeDatabase = require('./init-db');
+initializeDatabase(pool).catch(err => console.error('Init error:', err));
