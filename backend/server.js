@@ -67,3 +67,7 @@ if (require.main === module) {
 // CRM routes
 const crmRouter = require('./routes/crm');
 app.use('/api/crm', crmRouter);
+
+// Inventory routes
+const inventoryRouter = require('./routes/inventory');
+app.use('/api/inventory', inventoryRouter);
