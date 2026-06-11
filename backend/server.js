@@ -1,73 +1,92 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
+app.use(helmet());
 
-// CORS configuration
-const corsOptions = {
-  origin: [
-    'http://localhost:5173',
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+app.use('/api/', limiter);
+
+const allowedOrigins = [
     'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:5176',
     'https://pharma-frontend-13bz.onrender.com',
-    'https://pharma-admin-q4bx.onrender.com'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+    'https://pharma-admin-s43l.onrender.com',
+    'https://pharma-frontend-hkg6.onrender.com',
+];
 
-app.use(cors(corsOptions));
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+        else callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Database Pool
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionString: process.env.DATABASE_URL,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+pool.query('SELECT NOW()', (err) => {
+    if (err) console.error('❌ Database connection error:', err.message);
+    else console.log('✓ Database connected successfully');
 });
 
-// Make pool available to routes
 app.use((req, res, next) => {
-  req.pool = pool;
-  next();
+    req.db = pool;
+    next();
 });
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', require('./routes/products'));
-app.use('/api/cart', require('./routes/cart'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/addresses', require('./routes/addresses'));
-app.use('/api/prescriptions', require('./routes/prescriptions'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/advertisements', require('./routes/advertisements'));
-app.use('/api/analytics', require('./routes/analytics'));
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
 
-// Admin seed endpoint
-const adminSeedRouter = require('./routes/admin-seed');
-app.use('/api/admin', adminSeedRouter);
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString(), uptime: process.uptime(), environment: process.env.NODE_ENV });
+});
+
+app.get('/', (req, res) => {
+    res.json({ message: '🌿 KEVA Pharmacy API', version: '1.0.0', status: 'running' });
+});
+
+app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/products',      require('./routes/products'));
+app.use('/api/cart',          require('./routes/cart'));
+app.use('/api/orders',        require('./routes/orders'));
+app.use('/api/payments',      require('./routes/payments'));
+app.use('/api/addresses',     require('./routes/addresses'));
+app.use('/api/prescriptions', require('./routes/prescriptions'));
+
+app.use((req, res) => {
+    res.status(404).json({ error: 'Not Found', message: `Route ${req.method} ${req.url} does not exist`, timestamp: new Date().toISOString() });
+});
+
+app.use((err, req, res, next) => {
+    res.status(err.status || 500).json({ error: err.message, timestamp: new Date().toISOString() });
+});
+
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
+    console.log(`\n=====================================\n🌿 KEVA PHARMACY BACKEND\n=====================================\nServer running on port: ${PORT}\nEnvironment: ${process.env.NODE_ENV}\n=====================================\n`);
+});
+
+process.on('SIGTERM', () => server.close(() => pool.end(() => process.exit(0))));
+process.on('SIGINT', () => server.close(() => pool.end(() => process.exit(0))));
 
 module.exports = app;
-
-// Start server
-const port = process.env.PORT || 3000;
-if (require.main === module) {
-  const http = require('http');
-  http.createServer(app).listen(port, () => {
-    console.log(`✅ Server running on port ${port}`);
-  });
-}
-
-// CRM routes
-const crmRouter = require('./routes/crm');
-app.use('/api/crm', crmRouter);
-
-// Inventory routes
-const inventoryRouter = require('./routes/inventory');
-app.use('/api/inventory', inventoryRouter);
