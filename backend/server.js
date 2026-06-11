@@ -138,3 +138,7 @@ module.exports = app;
 // Initialize database with seed data
 const initializeDatabase = require('./init-db');
 initializeDatabase(pool).catch(err => console.error('Init error:', err));
+
+// Admin seed endpoint
+const adminSeedRouter = require('./routes/admin-seed');
+app.use('/api/admin', adminSeedRouter);
