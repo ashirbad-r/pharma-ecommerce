@@ -49,12 +49,8 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/advertisements', require('./routes/advertisements'));
 app.use('/api/analytics', require('./routes/analytics'));
 
-// Admin seed endpoint - MUST BE BEFORE module.exports
+// Admin seed endpoint
 const adminSeedRouter = require('./routes/admin-seed');
 app.use('/api/admin', adminSeedRouter);
-
-// Initialize database with seed data
-const initializeDatabase = require('./init-db');
-initializeDatabase(pool).catch(err => console.error('Init error:', err));
 
 module.exports = app;
