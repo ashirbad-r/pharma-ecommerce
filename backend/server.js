@@ -54,3 +54,12 @@ const adminSeedRouter = require('./routes/admin-seed');
 app.use('/api/admin', adminSeedRouter);
 
 module.exports = app;
+
+// Start server
+const port = process.env.PORT || 3000;
+if (require.main === module) {
+  const http = require('http');
+  http.createServer(app).listen(port, () => {
+    console.log(`✅ Server running on port ${port}`);
+  });
+}
