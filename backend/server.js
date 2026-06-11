@@ -63,3 +63,7 @@ if (require.main === module) {
     console.log(`✅ Server running on port ${port}`);
   });
 }
+
+// CRM routes
+const crmRouter = require('./routes/crm');
+app.use('/api/crm', crmRouter);
