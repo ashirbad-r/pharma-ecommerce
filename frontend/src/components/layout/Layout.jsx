@@ -9,7 +9,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <footer className="bg-white border-t border-gray-200 mt-16 py-8 text-center text-gray-500 text-sm">
-        © 2026 PharmaShop. All rights reserved.
+        © 2026 KEVA Pharmacy. All rights reserved.
       </footer>
     </div>
   );

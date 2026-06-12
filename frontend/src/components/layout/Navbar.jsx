@@ -25,7 +25,7 @@ export default function Navbar() {
             <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">Rx</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">PharmaShop</span>
+            <span className="text-xl font-bold text-gray-900">KEVA Pharmacy</span>
           </Link>
 
           {/* Desktop Nav */}
